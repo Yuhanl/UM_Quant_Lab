@@ -96,3 +96,38 @@ stateCountGreater = lahman %>%
           GROUP BY birthState
           HAVING stateCount >= 500
           ORDER BY stateCount DESC, birthState')) %>% collect()
+
+#inner join
+batting = lahman %>% 
+  tbl(sql('
+          SELECT * FROM batting')) %>% collect()
+
+pitching = lahman %>% 
+  tbl(sql('
+          SELECT * FROM pitching')) %>% collect()
+
+#find both batting and pitching playerID 
+both = lahman %>% 
+  tbl(sql('
+          SELECT DISTINCT p.playerID 
+          FROM pitching p
+          INNER JOIN batting b ON p.playerID = b.playerID')) %>% collect()
+
+#BONUS: try to find the name of the player both batting and pitching?
+bothName = lahman %>% 
+  tbl(sql('
+          SELECT m.nameGiven, m.playerID
+          FROM master m
+          WHERE m.playerID IN
+          (SELECT DISTINCT p.playerID 
+            FROM pitching p
+            INNER JOIN batting b ON p.playerID = b.playerID)')) %>% collect()
+
+#left/right join
+#find the player name that pitcher that has more than 10 wins
+pitchWin = lahman %>% 
+  tbl(sql('
+          SELECT m.nameGiven, p.W
+          FROM pitching p
+          LEFT JOIN master m ON p.playerID = m.playerID
+          WHERE p.W >=10')) %>% collect()
